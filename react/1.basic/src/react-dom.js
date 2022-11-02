@@ -21,6 +21,11 @@ function createDOM(vdom) {
 
   if (type === REACT_TEXT) {
     dom = document.createTextNode(props);
+  } else if (typeof type === 'function') {
+    if (type.isReactComponent) {
+      return mountClassComponent(vdom);
+    }
+    return mountFunctionComponent(vdom);
   } else {
     dom = document.createElement(type);
   }
@@ -38,6 +43,22 @@ function createDOM(vdom) {
   return dom;
 }
 
+function mountClassComponent (vdom) {
+  let { type: classComponent, props } = vdom;
+  let classInstance = new classComponent(props);
+  let renderVdom = classInstance.render();
+  let dom = createDOM(renderVdom);
+
+  return dom;
+}
+
+function mountFunctionComponent(vdom) {
+  let { type, props } = vdom;
+  let renderVdom = type(props);
+
+  return createDOM(renderVdom);
+}
+
 function reconcileChildren(children, parentDOM) {
   for (let i = 0; i < children.length; i++) {
     mount(children[i], parentDOM);
@@ -53,6 +74,8 @@ function updateProps(dom, oldProps = {}, newProps = {}) {
       for (let attr in styleObj) {
         dom.style[attr] = styleObj[attr];
       }
+    } else if (/^on[A-Z].*/.test(key)) {
+      dom[key.toLowerCase()] = newProps[key];
     } else {
       // 虚拟 DOM 属性一般来说刚好和 dom 的属性相同，都是驼峰命名
       dom[key] = newProps[key];

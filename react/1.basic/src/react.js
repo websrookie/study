@@ -1,5 +1,6 @@
 import { REACT_ELEMENT } from "./constants";
 import { wrapToVdom } from "./util";
+import Component from "./component";
 
 function createElement(type, config, children) {
   let ref; // 用来获取真实 DOM 元素
@@ -34,6 +35,7 @@ function createElement(type, config, children) {
 
 const React = {
   createElement,
+  Component,
 };
 
 export default React;

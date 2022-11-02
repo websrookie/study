@@ -5,7 +5,13 @@ import ReactDom from './react-dom';
 // const root = ReactDOM.createRoot(document.getElementById('root'));
 // root.render(<h1>APP</h1>);
 
-let element = <h1 className='title' style={{ color: 'red' }} >hello</h1>
+// let element = <h1 className='title' style={{ color: 'red' }} >hello</h1>
+
+function FunctionComponent(props) {
+  return <h1 className='title' style={{ color: 'red' }} >{ props.name }</h1>
+}
+
+let element = <FunctionComponent name="邵鹏" />
 
 console.log(element);
 
