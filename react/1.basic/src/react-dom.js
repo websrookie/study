@@ -39,7 +39,7 @@ function createDOM(vdom) {
       reconcileChildren(props.children, dom);
     }
   }
-
+  vdom.dom = dom;
   return dom;
 }
 
@@ -47,6 +47,8 @@ function mountClassComponent (vdom) {
   let { type: classComponent, props } = vdom;
   let classInstance = new classComponent(props);
   let renderVdom = classInstance.render();
+  // 先缓存一次渲染出来的 虚拟 vdom，放置在组件实例上
+  classInstance.renderVdom = vdom.oldRenderVdom = renderVdom;
   let dom = createDOM(renderVdom);
 
   return dom;
@@ -55,6 +57,7 @@ function mountClassComponent (vdom) {
 function mountFunctionComponent(vdom) {
   let { type, props } = vdom;
   let renderVdom = type(props);
+  vdom.oldRenderVdom = renderVdom;
 
   return createDOM(renderVdom);
 }
@@ -87,6 +90,33 @@ function updateProps(dom, oldProps = {}, newProps = {}) {
     }
   }
 }
+
+/**
+ * 从虚拟 dom 获取真实 dom
+ * @param {*} vdom 原生的 div => 真实的 dom 节点
+ * @returns
+ */
+export function findDOM(vdom) {
+  if (!vdom) return null;
+
+  if (vdom.dom) return vdom.dom
+
+  let renderVdom = vdom.oldRenderVdom;
+
+  return findDOM(renderVdom);
+};
+
+/**
+ * 比较虚拟dom，更新真实dom
+ * @param {*} parentDOM
+ * @param {*} oldVdom
+ * @param {*} newVdom
+ */
+export function compareTwoVdom(parentDOM, oldVdom, newVdom) {
+  let oldDOM = findDOM(oldVdom);
+  let newDOM = createDOM(newVdom);
+  parentDOM.replaceChild(newDOM, oldDOM);
+};
 
 const ReactDOM = {
   render,

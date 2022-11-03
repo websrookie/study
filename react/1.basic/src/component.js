@@ -1,3 +1,5 @@
+import { findDOM, compareTwoVdom } from "./react-dom";
+
 class Updater {
   constructor(classInstance) {
     this.classInstance = classInstance;
@@ -51,13 +53,20 @@ class Component {
     this.state = {};
     // 每个类组件的实例都配有一个自己的 Updater 更新器
     this.updater = new Updater(this);
+    this.oldRenderVdom = null;
   }
 
   setState(partialState) {
     this.updater.addState(partialState);
   }
 
-  forceUpdate() {}
+  forceUpdate() {
+    let oldRenderVdom = this.oldRenderVdom;
+    let oldDom = findDOM(oldRenderVdom);
+    let newRenderVdom = this.render(); // 渲染出新的虚拟 dom
+    compareTwoVdom(oldDom.parentNode, oldRenderVdom, newRenderVdom);
+    this.oldRenderVdom = newRenderVdom;
+  }
 }
 
 export default Component;
