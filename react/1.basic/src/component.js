@@ -1,5 +1,18 @@
 import { findDOM, compareTwoVdom } from "./react-dom";
 
+export let updateQueue = {
+  isBatchUpdate: false, // 是否是批量更新, 如果是 true，就是批量的 异步的，如果是 false 就是非批量的
+  updaters: new Set(),
+  batchUpdate() {
+    updateQueue.isBatchUpdate = false;
+
+    for (let updater of updateQueue.updaters) {
+      updater.updateComponent();
+    }
+
+    updateQueue.updaters.clear();
+  },
+};
 class Updater {
   constructor(classInstance) {
     this.classInstance = classInstance;
@@ -12,7 +25,11 @@ class Updater {
   }
 
   emitUpdate() {
-    this.updateComponent();
+    if (updateQueue.isBatchUpdate) { // 如果是批量
+      updateQueue.updaters.add(this); // 就把当前的 updater 添加到 set 里保存
+    } else {
+      this.updateComponent();
+    }
   }
 
   updateComponent() {
@@ -23,8 +40,6 @@ class Updater {
       shouldUpdate(classInstance, this.getState());
     }
   }
-
-  shouldUpdate() {}
 
   getState() {
     const { classInstance, pendingStates } = this;

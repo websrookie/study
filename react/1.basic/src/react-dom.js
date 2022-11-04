@@ -1,4 +1,5 @@
 import { REACT_TEXT } from "./util";
+import { addEvent } from "./event";
 
 /**
  * 需要把虚拟 DOM 转换成真实 DOM 并且插入到容器中
@@ -78,7 +79,7 @@ function updateProps(dom, oldProps = {}, newProps = {}) {
         dom.style[attr] = styleObj[attr];
       }
     } else if (/^on[A-Z].*/.test(key)) {
-      dom[key.toLowerCase()] = newProps[key];
+      addEvent(dom, key.toLowerCase(), newProps[key]);
     } else {
       // 虚拟 DOM 属性一般来说刚好和 dom 的属性相同，都是驼峰命名
       dom[key] = newProps[key];
